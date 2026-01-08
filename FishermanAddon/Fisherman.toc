@@ -1,0 +1,5 @@
+## Interface: 110002
+## Title: SafeFish Status
+## Notes: Optical Status Indicator
+## Author: EngineeringCorp
+SafeFish.lua
