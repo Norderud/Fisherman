@@ -1,5 +1,8 @@
-## Interface: 110002
-## Title: SafeFish Status
+## Interface: 11508
+## Title: Fisherman Status
 ## Notes: Optical Status Indicator
-## Author: EngineeringCorp
-SafeFish.lua
+## Author: Norderud
+## Version: 0.0.1
+## SavedVariables:
+
+Fisherman.lua
