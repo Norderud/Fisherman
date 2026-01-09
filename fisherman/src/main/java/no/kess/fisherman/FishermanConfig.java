@@ -72,4 +72,12 @@ public class FishermanConfig {
     public void incrementFishCaught() {
         setFishCaught(getFishCaught() + 1);
     }
+
+    public String getAudioDevice() {
+        return properties.getProperty("audioDevice", "");
+    }
+
+    public void setAudioDevice(String name) {
+        properties.setProperty("audioDevice", name);
+    }
 }

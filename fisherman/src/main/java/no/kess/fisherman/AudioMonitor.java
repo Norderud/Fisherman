@@ -1,26 +1,37 @@
 package no.kess.fisherman;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.TargetDataLine;
+import javax.sound.sampled.*;
 import java.util.function.Consumer;
 
 public class AudioMonitor {
     private final AudioSensor audioSensor = new AudioSensor();
     private final Consumer<Double> volumeListener;
     private volatile double currentVolume = 0.0;
-    private volatile boolean monitoring = true;
+    private volatile boolean monitoring = false;
+    private Mixer.Info selectedMixerInfo;
+    private Thread monitorThread;
+    private volatile TargetDataLine activeLine;
 
     public AudioMonitor(Consumer<Double> volumeListener) {
         this.volumeListener = volumeListener;
     }
 
-    public void start() {
-        new Thread(this::monitorLoop).start();
+    public void setMixerInfo(Mixer.Info mixerInfo) {
+        this.selectedMixerInfo = mixerInfo;
     }
 
-    public void stop() {
+    public synchronized void start() {
+        if (monitoring) return;
+        monitoring = true;
+        monitorThread = new Thread(this::monitorLoop, "AudioMonitorThread");
+        monitorThread.start();
+    }
+
+    public synchronized void stop() {
         monitoring = false;
+        if (activeLine != null) {
+            activeLine.close();
+        }
     }
 
     public double getCurrentVolume() {
@@ -31,8 +42,18 @@ public class AudioMonitor {
         try {
             // Use 16-bit Mono, Little-Endian
             AudioFormat format = new AudioFormat(44100, 16, 1, true, false);
-            TargetDataLine line = AudioSystem.getTargetDataLine(format);
-            line.open();
+            DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+
+            TargetDataLine line;
+            if (selectedMixerInfo != null) {
+                Mixer mixer = AudioSystem.getMixer(selectedMixerInfo);
+                line = (TargetDataLine) mixer.getLine(info);
+            } else {
+                line = AudioSystem.getTargetDataLine(format);
+            }
+
+            activeLine = line;
+            line.open(format);
             line.start();
 
             while (monitoring) {
@@ -42,11 +63,18 @@ public class AudioMonitor {
                     volumeListener.accept(vol);
                 }
             }
-
-            line.stop();
-            line.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            if (monitoring) {
+                e.printStackTrace();
+            }
+        } finally {
+            TargetDataLine line = activeLine;
+            if (line != null) {
+                line.stop();
+                line.close();
+            }
+            activeLine = null;
+            monitoring = false;
         }
     }
 }

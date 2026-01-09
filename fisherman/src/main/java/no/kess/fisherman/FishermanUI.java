@@ -1,5 +1,6 @@
 package no.kess.fisherman;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,6 +17,7 @@ public class FishermanUI extends JFrame {
     private JProgressBar volumeBar;
     private JTextField thresholdField;
     private JTextField reactionField;
+    private JComboBox<String> deviceBox;
     private JButton startStopButton;
 
     public FishermanUI() {
@@ -62,10 +64,27 @@ public class FishermanUI extends JFrame {
 
     private void onBotStoppedUI() {
         SwingUtilities.invokeLater(() -> {
+            deviceBox.setEnabled(true);
             thresholdField.setEnabled(true);
             reactionField.setEnabled(true);
             startStopButton.setText("Start Fishing");
         });
+    }
+
+    private void updateSelectedMixer(String name) {
+        Mixer.Info selected = null;
+        if (!"Default Device".equals(name) && name != null) {
+            Mixer.Info[] mixers = AudioSystem.getMixerInfo();
+            for (Mixer.Info mixerInfo : mixers) {
+                if (mixerInfo.getName().equals(name)) {
+                    selected = mixerInfo;
+                    break;
+                }
+            }
+        }
+        audioMonitor.stop();
+        audioMonitor.setMixerInfo(selected);
+        audioMonitor.start();
     }
 
     private void setupUI() {
@@ -84,7 +103,41 @@ public class FishermanUI extends JFrame {
         JPanel centerPanel = new JPanel(new GridLayout(4, 1, 5, 5));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Volume
+        // 1. Audio Device
+        JPanel devicePanel = new JPanel(new BorderLayout());
+        devicePanel.add(new JLabel("Audio Device: "), BorderLayout.WEST);
+
+        DefaultComboBoxModel<String> deviceModel = new DefaultComboBoxModel<>();
+        deviceModel.addElement("Default Device");
+
+        Mixer.Info[] mixers = AudioSystem.getMixerInfo();
+        AudioFormat format = new AudioFormat(44100, 16, 1, true, false);
+        DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+
+        for (Mixer.Info mixerInfo : mixers) {
+            if (AudioSystem.getMixer(mixerInfo).isLineSupported(info)) {
+                deviceModel.addElement(mixerInfo.getName());
+            }
+        }
+
+        deviceBox = new JComboBox<>(deviceModel);
+        String savedDevice = config.getAudioDevice();
+        if (!savedDevice.isEmpty()) {
+            deviceBox.setSelectedItem(savedDevice);
+            // Initialize audio monitor with saved device
+            updateSelectedMixer(savedDevice);
+        }
+
+        deviceBox.addActionListener(e -> {
+            String selected = (String) deviceBox.getSelectedItem();
+            config.setAudioDevice(selected);
+            config.save();
+            updateSelectedMixer(selected);
+        });
+        devicePanel.add(deviceBox, BorderLayout.CENTER);
+        centerPanel.add(devicePanel);
+
+        // 2. Volume
         JPanel volPanel = new JPanel(new BorderLayout());
         volPanel.add(new JLabel("Volume: "), BorderLayout.WEST);
         volumeBar = new JProgressBar(0, 100);
@@ -92,14 +145,14 @@ public class FishermanUI extends JFrame {
         volPanel.add(volumeBar, BorderLayout.CENTER);
         centerPanel.add(volPanel);
 
-        // Threshold
+        // 3. Threshold
         JPanel threshPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         threshPanel.add(new JLabel("Splash Threshold (0.0 - 1.0): "));
         thresholdField = new JTextField(String.valueOf(config.getSplashThreshold()), 10);
         threshPanel.add(thresholdField);
         centerPanel.add(threshPanel);
 
-        // Reaction Time
+        // 4. Reaction Time
         JPanel reactPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         reactPanel.add(new JLabel("Reaction Delay (ms): "));
         reactionField = new JTextField(String.valueOf(config.getReactionTime()), 10);
@@ -142,6 +195,7 @@ public class FishermanUI extends JFrame {
 
         thresholdField.setEnabled(false);
         reactionField.setEnabled(false);
+        deviceBox.setEnabled(false);
         startStopButton.setText("Stop Fishing");
         botEngine.start();
     }
