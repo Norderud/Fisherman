@@ -1,5 +1,6 @@
 package no.kess.fisherman;
 
+import java.awt.*;
 import java.io.*;
 import java.util.Properties;
 
@@ -25,6 +26,7 @@ public class FishermanConfig {
     public void save() {
         try (OutputStream output = new FileOutputStream(CONFIG_FILE)) {
             properties.store(output, "Fisherman Bot Configuration");
+            System.out.println("[DEBUG] Configuration saved to " + CONFIG_FILE);
         } catch (IOException io) {
             io.printStackTrace();
         }
@@ -79,5 +81,99 @@ public class FishermanConfig {
 
     public void setAudioDevice(String name) {
         properties.setProperty("audioDevice", name);
+    }
+
+    public int getActionKey() {
+        String val = properties.getProperty("actionKey", properties.getProperty("interactKey", String.valueOf(NativeKeyboard.SCANCODE_F10)));
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return NativeKeyboard.SCANCODE_F10;
+        }
+    }
+
+    public void setActionKey(int scanCode) {
+        properties.setProperty("actionKey", String.valueOf(scanCode));
+    }
+
+    public int getScreenIndex() {
+        String val = properties.getProperty("screenIndex", "0");
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    public void setScreenIndex(int index) {
+        properties.setProperty("screenIndex", String.valueOf(index));
+    }
+
+    public Rectangle getRoi() {
+        String x = properties.getProperty("roiX");
+        String y = properties.getProperty("roiY");
+        String w = properties.getProperty("roiW");
+        String h = properties.getProperty("roiH");
+        if (x != null && y != null && w != null && h != null) {
+            try {
+                return new Rectangle(
+                        Integer.parseInt(x),
+                        Integer.parseInt(y),
+                        Integer.parseInt(w),
+                        Integer.parseInt(h)
+                );
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public void setRoi(Rectangle roi) {
+        if (roi == null) {
+            properties.remove("roiX");
+            properties.remove("roiY");
+            properties.remove("roiW");
+            properties.remove("roiH");
+        } else {
+            properties.setProperty("roiX", String.valueOf(roi.x));
+            properties.setProperty("roiY", String.valueOf(roi.y));
+            properties.setProperty("roiW", String.valueOf(roi.width));
+            properties.setProperty("roiH", String.valueOf(roi.height));
+        }
+    }
+
+    public boolean isLureEnabled() {
+        return Boolean.parseBoolean(properties.getProperty("lureEnabled", "false"));
+    }
+
+    public void setLureEnabled(boolean enabled) {
+        properties.setProperty("lureEnabled", String.valueOf(enabled));
+    }
+
+    public int getLureKey() {
+        String val = properties.getProperty("lureKey", "0");
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    public void setLureKey(int scanCode) {
+        properties.setProperty("lureKey", String.valueOf(scanCode));
+    }
+
+    public int getLureInterval() {
+        String val = properties.getProperty("lureInterval", "10");
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return 10;
+        }
+    }
+
+    public void setLureInterval(int minutes) {
+        properties.setProperty("lureInterval", String.valueOf(minutes));
     }
 }

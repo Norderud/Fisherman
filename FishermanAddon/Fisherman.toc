@@ -3,6 +3,6 @@
 ## Notes: Optical Status Indicator
 ## Author: Norderud
 ## Version: 0.0.1
-## SavedVariables:
+## SavedVariables: FishermanStats
 
 Fisherman.lua

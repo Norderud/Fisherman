@@ -1,14 +1,27 @@
 package no.kess.fisherman;
 
+import com.sun.jna.Native;
 import com.sun.jna.platform.win32.BaseTSD;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinUser;
+import com.sun.jna.win32.W32APIOptions;
 
 public class NativeKeyboard {
 
-    public static final int SCANCODE_F6 = 0x40;
+    public static final int SCANCODE_ESC = 0x01;
+
     public static final int SCANCODE_F10 = 0x44;
+
+    public static int getScanCode(int virtualKey) {
+        return User32Ext.INSTANCE.MapVirtualKey(virtualKey, 0); // MAPVK_VK_TO_VSC = 0
+    }
+
+    public interface User32Ext extends User32 {
+        User32Ext INSTANCE = Native.load("user32", User32Ext.class, W32APIOptions.DEFAULT_OPTIONS);
+
+        int MapVirtualKey(int uCode, int uMapType);
+    }
 
     private static final int KEYEVENTF_KEYUP = 0x0002;
     private static final int KEYEVENTF_SCANCODE = 0x0008;

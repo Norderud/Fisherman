@@ -24,6 +24,31 @@ public class Humanizer {
         }
     }
 
+    /**
+     * Small sleep for smooth movements (ms).
+     */
+    public static void sleepSmall(int mean, int deviation) {
+        try {
+            double val = random.nextGaussian() * deviation + mean;
+            Thread.sleep((long) Math.max(1, val));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static int getGaussianInt(int mean, int deviation) {
+        return (int) (random.nextGaussian() * deviation + mean);
+    }
+
+    public static int randomInt(int min, int max) {
+        if (min >= max) return min;
+        return random.nextInt(max - min + 1) + min;
+    }
+
+    public static double randomDouble(double min, double max) {
+        return min + (max - min) * random.nextDouble();
+    }
+
     public static boolean coinFlip(double probability) {
         return random.nextDouble() < probability;
     }
