@@ -1,6 +1,6 @@
 # Default ignored files
 /shelf/
-/fisherman/.idea/workspace.xml
+/utility-tool/.idea/workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files
@@ -10,4 +10,4 @@
 .vscode
 .github
 
-fisherman/target
+utility-tool/target
