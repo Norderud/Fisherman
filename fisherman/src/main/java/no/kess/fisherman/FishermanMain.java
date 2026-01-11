@@ -1,5 +1,7 @@
 package no.kess.fisherman;
 
+import no.kess.fisherman.ui.FishermanUI;
+
 import javax.swing.*;
 
 public class FishermanMain {
