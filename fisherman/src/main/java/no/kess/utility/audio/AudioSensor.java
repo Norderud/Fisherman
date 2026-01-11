@@ -1,4 +1,4 @@
-package no.kess.fisherman.audio;
+package no.kess.utility.audio;
 
 import javax.sound.sampled.TargetDataLine;
 

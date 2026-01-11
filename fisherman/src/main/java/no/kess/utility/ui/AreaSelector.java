@@ -1,4 +1,4 @@
-package no.kess.fisherman.ui;
+package no.kess.utility.ui;
 
 import javax.swing.*;
 import java.awt.*;

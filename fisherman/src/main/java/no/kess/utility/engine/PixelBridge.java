@@ -1,4 +1,4 @@
-package no.kess.fisherman.engine;
+package no.kess.utility.engine;
 
 import java.awt.*;
 

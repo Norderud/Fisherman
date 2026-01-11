@@ -1,17 +1,17 @@
-package no.kess.fisherman.engine;
+package no.kess.utility.engine;
 
-import no.kess.fisherman.audio.AudioMonitor;
-import no.kess.fisherman.config.FishermanConfig;
-import no.kess.fisherman.input.NativeKeyboard;
-import no.kess.fisherman.input.NativeMouse;
-import no.kess.fisherman.ui.DetectionOverlay;
-import no.kess.fisherman.util.Humanizer;
+import no.kess.utility.audio.AudioMonitor;
+import no.kess.utility.config.AppConfig;
+import no.kess.utility.input.NativeKeyboard;
+import no.kess.utility.input.NativeMouse;
+import no.kess.utility.ui.DetectionOverlay;
+import no.kess.utility.util.Humanizer;
 
 import java.awt.*;
 import java.util.function.Consumer;
 
 public class BotEngine {
-    private final FishermanConfig config;
+    private final AppConfig config;
     private final Consumer<String> statusListener;
     private final Runnable onStop;
     private final AudioMonitor audioMonitor;
@@ -19,7 +19,7 @@ public class BotEngine {
     private volatile boolean running = false;
     private Thread botThread;
 
-    public BotEngine(FishermanConfig config, AudioMonitor audioMonitor, Consumer<String> statusListener, Runnable onStop) {
+    public BotEngine(AppConfig config, AudioMonitor audioMonitor, Consumer<String> statusListener, Runnable onStop) {
         this.config = config;
         this.audioMonitor = audioMonitor;
         this.statusListener = statusListener;
@@ -275,7 +275,7 @@ public class BotEngine {
                     return false;
                 }
             }
-            Humanizer.sleep(50, 0);
+            Humanizer.sleep(60, 15);
         }
         return false;
     }

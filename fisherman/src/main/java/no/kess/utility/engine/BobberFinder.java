@@ -1,15 +1,15 @@
-package no.kess.fisherman.engine;
+package no.kess.utility.engine;
 
-import no.kess.fisherman.config.FishermanConfig;
+import no.kess.utility.config.AppConfig;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class BobberFinder {
     private final Robot robot;
-    private final FishermanConfig config;
+    private final AppConfig config;
 
-    public BobberFinder(FishermanConfig config) {
+    public BobberFinder(AppConfig config) {
         this.config = config;
         try {
             this.robot = new Robot();

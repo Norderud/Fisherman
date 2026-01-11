@@ -1,16 +1,16 @@
-package no.kess.fisherman.config;
+package no.kess.utility.config;
 
-import no.kess.fisherman.input.NativeKeyboard;
+import no.kess.utility.input.NativeKeyboard;
 
 import java.awt.*;
 import java.io.*;
 import java.util.Properties;
 
-public class FishermanConfig {
-    private static final String CONFIG_FILE = "fisherman.properties";
+public class AppConfig {
+    private static final String CONFIG_FILE = "utility.properties";
     private final Properties properties = new Properties();
 
-    public FishermanConfig() {
+    public AppConfig() {
         load();
     }
 
@@ -27,7 +27,7 @@ public class FishermanConfig {
 
     public void save() {
         try (OutputStream output = new FileOutputStream(CONFIG_FILE)) {
-            properties.store(output, "Fisherman Bot Configuration");
+            properties.store(output, "Utility Configuration");
             System.out.println("[DEBUG] Configuration saved to " + CONFIG_FILE);
         } catch (IOException io) {
             io.printStackTrace();

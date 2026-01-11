@@ -1,34 +1,17 @@
-# 🎣 Fisherman
+# 🎣 Utility Tool
 
-**The Ghost in the Machine: Undetectable, External WoW Fishing Automation.**
+This tool is built different. It ignores the game's memory completely.
 
-> **⚠️ DISCLAIMER:** For educational purposes only. Use at your own risk.
+## Features
 
-## 🔮 Philosophy: "Passive Observation"
-Fisherman is built different. It ignores the game's memory completely.
-*   **Audio Analysis:** Listens for the splash. 🔊
-*   **Hardware Emulation:** Mimics physical keyboard drivers via JNA. ⌨️
-*   **Optical Bridge:** Reads a 1x1 pixel for game state (e.g., Inventory Full). 👁️
+- Hardware-level input simulation (Keyboard & Mouse)
+- Humanized movement paths (Bezier curves)
+- Audio-based event detection
+- Optical status bridge (no memory reading)
 
-## ✨ Key Features
-*   **100% External:** Zero memory injection or reading.
-*   **Human-like:** Randomized Gaussian distribution delays. No robotic timers.
-*   **Smart Triggers:** Audio RMS spike detection for instant catches.
+## How to use
 
-## 🛠️ Requirements
-*   **Java 17+** & **Maven**
-*   **Windows** (Required for `User32.dll` access)
-
-## 🚀 Quick Start
-
-### 1. Game Config
-*   **Bind keys:** Fishing to `F6`, Interact with Target to `F10`.
-*   **Audio:** Max SFX/Master, mute Music/Ambience.
-*   **Macro:** `/console SoftTargetInteractRange 30`
-
-### 2. Build & Deploy
-```bash
-git clone https://github.com/yourusername/Fisherman.git
-cd Fisherman
-mvn clean package
-# Run the JAR or FishermanMain.java while near water!
+1. Clone the repository.
+2. Build the project using Maven.
+3. Run the JAR or Main.java.
+4. Configure your settings in the UI.

@@ -1,4 +1,4 @@
-package no.kess.fisherman.input;
+package no.kess.utility.input;
 
 import com.sun.jna.Native;
 import com.sun.jna.platform.win32.BaseTSD;
@@ -6,7 +6,7 @@ import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.win32.W32APIOptions;
-import no.kess.fisherman.util.Humanizer;
+import no.kess.utility.util.Humanizer;
 
 public class NativeKeyboard {
 

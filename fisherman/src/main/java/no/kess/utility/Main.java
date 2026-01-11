@@ -1,10 +1,10 @@
-package no.kess.fisherman;
+package no.kess.utility;
 
-import no.kess.fisherman.ui.FishermanUI;
+import no.kess.utility.ui.AppUI;
 
 import javax.swing.*;
 
-public class FishermanMain {
+public class Main {
     public static void main(String[] args) {
         // Set nice Look and Feel
         try {
@@ -12,6 +12,6 @@ public class FishermanMain {
         } catch (Exception ignored) {
         }
 
-        SwingUtilities.invokeLater(FishermanUI::new);
+        SwingUtilities.invokeLater(AppUI::new);
     }
 }

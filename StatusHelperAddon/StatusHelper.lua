@@ -14,14 +14,14 @@ local justCaught = false
 local justTooFar = false
 
 -- Create a tiny frame at the top-left of the screen (0,0)
-local f = CreateFrame("Frame", "FishermanFrame", UIParent)
+local f = CreateFrame("Frame", "StatusHelperFrame", UIParent)
 f:SetSize(2, 2)
 f:SetPoint("TOPLEFT", 0, 0)
 f.tex = f:CreateTexture(nil, "OVERLAY")
 f.tex:SetAllPoints()
 
 -- Create status indicator frame
-local statusFrame = CreateFrame("Frame", "FishermanStatusFrame", UIParent)
+local statusFrame = CreateFrame("Frame", "StatusHelperStatusFrame", UIParent)
 statusFrame:SetSize(150, 30)
 statusFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
 statusFrame:Hide()0
@@ -32,7 +32,7 @@ statusFrame.bg:SetColorTexture(0, 0, 0, 0.7)
 
 statusFrame.text = statusFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 statusFrame.text:SetPoint("CENTER")
-statusFrame.text:SetText("Fisherman: ACTIVE")
+statusFrame.text:SetText("StatusHelper: ACTIVE")
 statusFrame.text:SetTextColor(0, 1, 0)
 
 -- Helper function to update the pixel bridge
@@ -76,10 +76,10 @@ end
 -- Helper function to show/hide status indicator
 local function UpdateStatusIndicator()
     if isEnabled then
-        statusFrame.text:SetText("Fisherman: ACTIVE")
+        statusFrame.text:SetText("StatusHelper: ACTIVE")
         statusFrame.text:SetTextColor(0, 1, 0)
     else
-        statusFrame.text:SetText("Fisherman: INACTIVE")
+        statusFrame.text:SetText("StatusHelper: INACTIVE")
         statusFrame.text:SetTextColor(1, 0, 0)
     end
     statusFrame:Show()
@@ -93,26 +93,26 @@ local function SlashCommandHandler(msg)
         isEnabled = true
         UpdatePixelBridge()
         UpdateStatusIndicator()
-        print("Fisherman addon: ENABLED")
+        print("StatusHelper addon: ENABLED")
     elseif msg == "off" or msg == "stop" or msg == "disable" then
         isEnabled = false
         UpdatePixelBridge()
         UpdateStatusIndicator()
-        print("Fisherman addon: DISABLED")
+        print("StatusHelper addon: DISABLED")
     elseif msg == "status" then
-        print("Fisherman addon is currently: " .. (isEnabled and "ENABLED" or "DISABLED"))
+        print("StatusHelper addon is currently: " .. (isEnabled and "ENABLED" or "DISABLED"))
         UpdateStatusIndicator()
     elseif msg == "stats" then
-        if not FishermanStats then
-            print("Fisherman statistics not initialized yet.")
+        if not HelperStats then
+            print("StatusHelper statistics not initialized yet.")
             return
         end
-        print("Fisherman Statistics:")
-        print("  Throws: " .. (FishermanStats.throws or 0))
-        print("  Successes: " .. (FishermanStats.successes or 0))
+        print("StatusHelper Statistics:")
+        print("  Throws: " .. (HelperStats.throws or 0))
+        print("  Successes: " .. (HelperStats.successes or 0))
         print("  Looted Items:")
         local hasItems = false
-        for item, count in pairs(FishermanStats.items or {}) do
+        for item, count in pairs(HelperStats.items or {}) do
             print("    - " .. item .. ": " .. count)
             hasItems = true
         end
@@ -120,24 +120,24 @@ local function SlashCommandHandler(msg)
             print("    - None")
         end
     elseif msg == "reset" then
-        FishermanStats = { throws = 0, successes = 0, items = {} }
-        print("Fisherman Statistics reset.")
+        HelperStats = { throws = 0, successes = 0, items = {} }
+        print("StatusHelper Statistics reset.")
     else
-        print("Fisherman addon commands: on, off, status, stats, reset")
+        print("StatusHelper addon commands: on, off, status, stats, reset")
     end
 end
 
 -- Register slash commands
-SLASH_FISHERMAN1 = "/fisherman"
-SLASH_FISHERMAN2 = "/fish"
-SlashCmdList["FISHERMAN"] = SlashCommandHandler
+SLASH_StatusHelper1 = "/sh"
+SLASH_StatusHelper2 = "/helper"
+SlashCmdList["StatusHelper"] = SlashCommandHandler
 
 -- Event handler
 local function OnEvent(self, event, ...)
     if event == "ADDON_LOADED" then
         local addonName = ...
-        if addonName == "Fisherman" or addonName == "FishermanAddon" then
-            FishermanStats = FishermanStats or { throws = 0, successes = 0, items = {} }
+        if addonName == "StatusHelper" or addonName == "StatusHelperAddon" then
+            HelperStats = HelperStats or { throws = 0, successes = 0, items = {} }
         end
     end
 
@@ -149,8 +149,8 @@ local function OnEvent(self, event, ...)
         local unit, _, spellID = ...
         if unit == "player" and FishingIDs[spellID] then
             isFishing = (event == "UNIT_SPELLCAST_CHANNEL_START")
-            if isFishing and FishermanStats then
-                FishermanStats.throws = FishermanStats.throws + 1
+            if isFishing and HelperStats then
+                HelperStats.throws = HelperStats.throws + 1
             end
             UpdatePixelBridge()
         end
@@ -158,15 +158,15 @@ local function OnEvent(self, event, ...)
         local msg = ...
         -- Simplistic check for "You receive loot"
         if string.find(msg, "You receive loot") or string.find(msg, "You create") then
-             if FishermanStats then
+             if HelperStats then
                  if not justCaught then
-                     FishermanStats.successes = FishermanStats.successes + 1
+                     HelperStats.successes = HelperStats.successes + 1
                  end
                  
                  -- Try to extract item name from link
                  local itemName = string.match(msg, "|h%[(.-)%]|h")
                  if itemName then
-                     FishermanStats.items[itemName] = (FishermanStats.items[itemName] or 0) + 1
+                     HelperStats.items[itemName] = (HelperStats.items[itemName] or 0) + 1
                  end
              end
              justCaught = true

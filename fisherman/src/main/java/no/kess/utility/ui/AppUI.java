@@ -1,23 +1,23 @@
-package no.kess.fisherman.ui;
+package no.kess.utility.ui;
 
-import no.kess.fisherman.audio.AudioMonitor;
-import no.kess.fisherman.config.FishermanConfig;
-import no.kess.fisherman.engine.BobberFinder;
-import no.kess.fisherman.engine.BotEngine;
-import no.kess.fisherman.engine.PixelBridge;
-import no.kess.fisherman.input.NativeKeyboard;
-import no.kess.fisherman.input.NativeMouse;
-import no.kess.fisherman.util.Humanizer;
+import no.kess.utility.audio.AudioMonitor;
+import no.kess.utility.config.AppConfig;
+import no.kess.utility.engine.BobberFinder;
+import no.kess.utility.engine.BotEngine;
+import no.kess.utility.engine.PixelBridge;
+import no.kess.utility.input.NativeKeyboard;
+import no.kess.utility.input.NativeMouse;
+import no.kess.utility.util.Humanizer;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class FishermanUI extends JFrame {
+public class AppUI extends JFrame {
     public static final int SCREEN_WIDTH = 650;
     public static final int SCREEN_HEIGHT = 600;
-    private final FishermanConfig config;
+    private final AppConfig config;
     private final AudioMonitor audioMonitor;
     private final BotEngine botEngine;
     private final PixelBridge pixelBridge;
@@ -39,9 +39,9 @@ public class FishermanUI extends JFrame {
     private JComboBox<String> screenBox;
     private JButton startStopButton;
 
-    public FishermanUI() {
-        super("Fisherman");
-        this.config = new FishermanConfig();
+    public AppUI() {
+        super("Utility Tool");
+        this.config = new AppConfig();
         this.pixelBridge = new PixelBridge();
 
         this.audioMonitor = new AudioMonitor(this::updateVolumeUI);

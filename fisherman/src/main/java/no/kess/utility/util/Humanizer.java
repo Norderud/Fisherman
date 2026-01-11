@@ -1,4 +1,4 @@
-package no.kess.fisherman.util;
+package no.kess.utility.util;
 
 import java.util.Random;
 
