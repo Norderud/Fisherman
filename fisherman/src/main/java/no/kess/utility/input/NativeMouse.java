@@ -1,21 +1,21 @@
 package no.kess.utility.input;
 
-import com.sun.jna.platform.win32.BaseTSD;
-import com.sun.jna.platform.win32.User32;
-import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinUser;
 import no.kess.utility.util.Humanizer;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 
 public class NativeMouse {
-    private static final int MOUSEEVENTF_MOVE = 0x0001;
-    private static final int MOUSEEVENTF_LEFTDOWN = 0x0002;
-    private static final int MOUSEEVENTF_LEFTUP = 0x0004;
-    private static final int MOUSEEVENTF_RIGHTDOWN = 0x0008;
-    private static final int MOUSEEVENTF_RIGHTUP = 0x0010;
-    private static final int MOUSEEVENTF_ABSOLUTE = 0x8000;
-    private static final int MOUSEEVENTF_VIRTUALDESK = 0x4000;
+    private static Robot robot;
+
+    static {
+        try {
+            robot = new Robot();
+            robot.setAutoDelay(0);
+        } catch (AWTException e) {
+            System.err.println("[ERROR] Could not initialize Robot for NativeMouse: " + e.getMessage());
+        }
+    }
 
     public static void mouseMove(int targetX, int targetY, int screenIdx) {
         PointerInfo info = MouseInfo.getPointerInfo();
@@ -73,46 +73,25 @@ public class NativeMouse {
      * Internal direct movement (teleport)
      */
     private static void mouseMoveDirect(int x, int y) {
-        Rectangle virtualBounds = getVirtualDesktopBounds();
-        int absX = (x - virtualBounds.x) * 65536 / virtualBounds.width;
-        int absY = (y - virtualBounds.y) * 65536 / virtualBounds.height;
-
-        sendInput(absX, absY, MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK);
+        if (robot != null) {
+            robot.mouseMove(x, y);
+        }
     }
 
     public static void leftClick() {
-        sendInput(0, 0, MOUSEEVENTF_LEFTDOWN);
-        Humanizer.sleep(100, 20);
-        sendInput(0, 0, MOUSEEVENTF_LEFTUP);
+        if (robot != null) {
+            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+            Humanizer.sleep(100, 20);
+            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+        }
     }
 
     public static void rightClick() {
-        sendInput(0, 0, MOUSEEVENTF_RIGHTDOWN);
-        Humanizer.sleep(100, 20);
-        sendInput(0, 0, MOUSEEVENTF_RIGHTUP);
-    }
-
-    private static void sendInput(int x, int y, int flags) {
-        WinUser.INPUT input = new WinUser.INPUT();
-        input.type = new WinDef.DWORD(WinUser.INPUT.INPUT_MOUSE);
-        input.input.setType("mi");
-        input.input.mi.dx = new WinDef.LONG(x);
-        input.input.mi.dy = new WinDef.LONG(y);
-        input.input.mi.mouseData = new WinDef.DWORD(0);
-        input.input.mi.dwFlags = new WinDef.DWORD(flags);
-        input.input.mi.time = new WinDef.DWORD(0);
-        input.input.mi.dwExtraInfo = new BaseTSD.ULONG_PTR(0);
-
-        User32.INSTANCE.SendInput(new WinDef.DWORD(1), (WinUser.INPUT[]) input.toArray(1), input.size());
-    }
-
-    private static Rectangle getVirtualDesktopBounds() {
-        Rectangle virtualBounds = new Rectangle();
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[] gs = ge.getScreenDevices();
-        for (GraphicsDevice gd : gs) {
-            virtualBounds = virtualBounds.union(gd.getDefaultConfiguration().getBounds());
+        if (robot != null) {
+            robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+            Humanizer.sleep(100, 20);
+            robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
         }
-        return virtualBounds;
     }
+
 }

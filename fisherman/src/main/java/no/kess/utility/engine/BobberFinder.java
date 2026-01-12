@@ -54,7 +54,7 @@ public class BobberFinder {
                 int b = rgb & 0xFF;
 
                 // Redness score: Red component relative to others
-                if (r > 120 && r > g * 1.5 && r > b * 1.5) {
+                if (r > 0 && r > g * 1.5 && r > b * 1.5) {
                     double redness = r - (g + b) / 2.0;
                     if (redness > maxRedness) {
                         maxRedness = redness;
