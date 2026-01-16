@@ -25,14 +25,17 @@ public class AppUI extends JFrame {
     private JLabel statusLabel;
     private StatusIndicator statusIndicator;
     private JLabel fishCaughtLabel;
+    private JLabel throwsLabel;
     private JProgressBar volumeBar;
     private JTextField thresholdField;
     private JTextField reactionField;
     private JTextField castKeyField;
     private JTextField interactKeyField;
     private JTextField stopKeyField;
+    private JTextField runTimeField;
     private JCheckBox lureCheckBox;
     private JCheckBox showDetectionCheckBox;
+    private JCheckBox logoutAfterFullBagCheckBox;
     private JTextField lureIntervalField;
     private JTextField lureKeyField;
     private JComboBox<String> deviceBox;
@@ -94,6 +97,7 @@ public class AppUI extends JFrame {
 
             if (botEngine.isRunning()) {
                 fishCaughtLabel.setText("Fish Caught: " + config.getFishCaught());
+                throwsLabel.setText("Throws: " + config.getThrows());
                 if (status.isFishing()) {
                     statusLabel.setForeground(new Color(0, 128, 0)); // Dark green when fishing
                 } else {
@@ -123,11 +127,35 @@ public class AppUI extends JFrame {
             castKeyField.setEnabled(true);
             interactKeyField.setEnabled(true);
             stopKeyField.setEnabled(true);
+            runTimeField.setEnabled(true);
             lureCheckBox.setEnabled(true);
             showDetectionCheckBox.setEnabled(true);
+            logoutAfterFullBagCheckBox.setEnabled(true);
             lureIntervalField.setEnabled(true);
             lureKeyField.setEnabled(true);
             startStopButton.setText("Start Fishing");
+
+            int sessionFish = botEngine.getSessionFishCaught();
+            int sessionThrows = botEngine.getSessionThrows();
+            String duration = botEngine.getSessionDurationFormatted();
+
+            String stopReasonMsg = "Manual Stop";
+            BotEngine.StopReason reason = botEngine.getStopReason();
+            if (reason == BotEngine.StopReason.BAGS_FULL) {
+                stopReasonMsg = "Bags Full";
+            } else if (reason == BotEngine.StopReason.TIME_LIMIT) {
+                stopReasonMsg = "Time Limit Reached";
+            } else if (reason == BotEngine.StopReason.ERROR) {
+                stopReasonMsg = "Error occurred";
+            }
+
+            JOptionPane.showMessageDialog(this,
+                    "Session Report:\n" +
+                            "Stop Reason: " + stopReasonMsg + "\n" +
+                            "Run Time: " + duration + "\n" +
+                            "Throws: " + sessionThrows + "\n" +
+                            "Fish Caught: " + sessionFish,
+                    "Bot Stopped", JOptionPane.INFORMATION_MESSAGE);
         });
     }
 
@@ -156,7 +184,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createStatsPanel() {
-        JPanel statsPanel = new JPanel(new GridLayout(2, 1));
+        JPanel statsPanel = new JPanel(new GridLayout(3, 1));
 
         JPanel statusLine = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
         statusIndicator = new StatusIndicator();
@@ -166,55 +194,42 @@ public class AppUI extends JFrame {
         statusLine.add(statusLabel);
 
         fishCaughtLabel = new JLabel("Fish Caught: " + config.getFishCaught(), SwingConstants.CENTER);
+        throwsLabel = new JLabel("Throws: " + config.getThrows(), SwingConstants.CENTER);
         statsPanel.add(statusLine);
         statsPanel.add(fishCaughtLabel);
+        statsPanel.add(throwsLabel);
         return statsPanel;
     }
 
     private JPanel createConfigPanel() {
-        JPanel centerPanel = new JPanel(new GridLayout(13, 1, 5, 5));
+        JPanel centerPanel = new JPanel(new GridLayout(15, 1, 5, 5));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 1. Audio Device
         centerPanel.add(createAudioDevicePanel());
-
-        // 2. Screen Selection
         centerPanel.add(createScreenSelectionPanel());
-
-        // 3. Search Area Selection
         centerPanel.add(createSearchAreaPanel());
-
-        // 4. Volume
         centerPanel.add(createVolumePanel());
-
-        // 5. Threshold
         centerPanel.add(createThresholdPanel());
-
-        // 6. Reaction Time
         centerPanel.add(createReactionTimePanel());
-
-        // 7. Cast Keybind
+        centerPanel.add(createRunTimeLimitPanel());
         centerPanel.add(createCastKeyPanel());
-
-        // 8. Interact Keybind
         centerPanel.add(createInteractKeyPanel());
-
-        // 9. Stop Keybind
         centerPanel.add(createStopKeyPanel());
-
-        // 10. Lure Toggle & Interval
         centerPanel.add(createLureTogglePanel());
-
-        // 11. Lure Keybind
         centerPanel.add(createLureKeyPanel());
-
-        // 12. Show Detection Point
         centerPanel.add(createShowDetectionPanel());
-
-        // 13. Test Detection
+        centerPanel.add(createLogoutAfterFullBagPanel());
         centerPanel.add(createTestDetectionPanel());
 
         return centerPanel;
+    }
+
+    private JPanel createRunTimeLimitPanel() {
+        JPanel timePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        timePanel.add(new JLabel("Run Limit (min, 0=off): "));
+        runTimeField = new JTextField(String.valueOf(config.getRunTimeLimit()), 5);
+        timePanel.add(runTimeField);
+        return timePanel;
     }
 
     private JPanel createAudioDevicePanel() {
@@ -427,6 +442,17 @@ public class AppUI extends JFrame {
         return showDetectionPanel;
     }
 
+    private JPanel createLogoutAfterFullBagPanel() {
+        JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        logoutAfterFullBagCheckBox = new JCheckBox("Logout after full bag", config.isLogoutAfterFullBag());
+        logoutAfterFullBagCheckBox.addActionListener(e -> {
+            config.setLogoutAfterFullBag(logoutAfterFullBagCheckBox.isSelected());
+            config.save();
+        });
+        logoutPanel.add(logoutAfterFullBagCheckBox);
+        return logoutPanel;
+    }
+
     private JPanel createTestDetectionPanel() {
         JPanel testPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton testBtn = new JButton("Test Bobber Detection");
@@ -474,14 +500,17 @@ public class AppUI extends JFrame {
             double thresh = Double.parseDouble(thresholdField.getText());
             int react = Integer.parseInt(reactionField.getText());
             int lureInterval = Integer.parseInt(lureIntervalField.getText());
-            System.out.println("[DEBUG] Applying configuration - Threshold: " + thresh + ", Reaction: " + react + ", Lure: " + lureCheckBox.isSelected() + " every " + lureInterval + " mins");
+            int runLimit = Integer.parseInt(runTimeField.getText());
+
+            System.out.println("[DEBUG] Applying configuration - Threshold: " + thresh + ", Reaction: " + react + ", Lure: " + lureCheckBox.isSelected() + " every " + lureInterval + " mins, Limit: " + runLimit + " mins");
             config.setSplashThreshold(thresh);
             config.setReactionTime(react);
             config.setLureEnabled(lureCheckBox.isSelected());
             config.setLureInterval(lureInterval);
+            config.setRunTimeLimit(runLimit);
             config.save();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid Threshold, Reaction Time, or Lure Interval Value");
+            JOptionPane.showMessageDialog(this, "Invalid Threshold, Reaction Time, Lure Interval, or Run Limit Value");
             return;
         }
 
@@ -490,10 +519,12 @@ public class AppUI extends JFrame {
         castKeyField.setEnabled(false);
         interactKeyField.setEnabled(false);
         stopKeyField.setEnabled(false);
+        runTimeField.setEnabled(false);
         deviceBox.setEnabled(false);
         screenBox.setEnabled(false);
         lureCheckBox.setEnabled(false);
         showDetectionCheckBox.setEnabled(false);
+        logoutAfterFullBagCheckBox.setEnabled(false);
         lureIntervalField.setEnabled(false);
         lureKeyField.setEnabled(false);
         startStopButton.setText("Stop Fishing");

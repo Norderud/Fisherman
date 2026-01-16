@@ -62,6 +62,26 @@ public class AppConfig {
         setFishCaught(getFishCaught() + 1);
     }
 
+    public int getThrows() {
+        return getIntProperty("throws", 0);
+    }
+
+    public void setThrows(int val) {
+        properties.setProperty("throws", String.valueOf(val));
+    }
+
+    public void incrementThrows() {
+        setThrows(getThrows() + 1);
+    }
+
+    public int getRunTimeLimit() {
+        return getIntProperty("runTimeLimit", 0);
+    }
+
+    public void setRunTimeLimit(int minutes) {
+        properties.setProperty("runTimeLimit", String.valueOf(minutes));
+    }
+
     public String getAudioDevice() {
         return properties.getProperty("audioDevice", "");
     }
@@ -170,6 +190,14 @@ public class AppConfig {
 
     public void setShowDetectionPoint(boolean show) {
         properties.setProperty("showDetectionPoint", String.valueOf(show));
+    }
+
+    public boolean isLogoutAfterFullBag() {
+        return Boolean.parseBoolean(properties.getProperty("logoutAfterFullBag", "false"));
+    }
+
+    public void setLogoutAfterFullBag(boolean logout) {
+        properties.setProperty("logoutAfterFullBag", String.valueOf(logout));
     }
 
     private int getIntProperty(String key, int defaultValue) {

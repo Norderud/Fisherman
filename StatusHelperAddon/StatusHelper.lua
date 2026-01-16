@@ -24,7 +24,7 @@ f.tex:SetAllPoints()
 local statusFrame = CreateFrame("Frame", "StatusHelperStatusFrame", UIParent)
 statusFrame:SetSize(150, 30)
 statusFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
-statusFrame:Hide()0
+statusFrame:Hide()
 
 statusFrame.bg = statusFrame:CreateTexture(nil, "BACKGROUND")
 statusFrame.bg:SetAllPoints()
@@ -51,7 +51,12 @@ local function UpdatePixelBridge()
     -- Check Bags
     local freeSlots = 0
     for i = 0, NUM_BAG_SLOTS do
-        local bagFreeSlots = C_Container.GetContainerNumFreeSlots(i)
+        local bagFreeSlots
+        if C_Container and C_Container.GetContainerNumFreeSlots then
+            bagFreeSlots = C_Container.GetContainerNumFreeSlots(i)
+        else
+            bagFreeSlots = GetContainerNumFreeSlots(i)
+        end
         if bagFreeSlots then
             freeSlots = freeSlots + bagFreeSlots
         end
@@ -143,7 +148,7 @@ local function OnEvent(self, event, ...)
 
     if not isEnabled then return end
 
-    if event == "BAG_UPDATE" then
+    if event == "BAG_UPDATE" or event == "BAG_UPDATE_DELAYED" or event == "PLAYER_ENTERING_WORLD" then
         UpdatePixelBridge()
     elseif event == "UNIT_SPELLCAST_CHANNEL_START" or event == "UNIT_SPELLCAST_CHANNEL_STOP" then
         local unit, _, spellID = ...
@@ -191,7 +196,9 @@ end
 
 -- Register events
 f:RegisterEvent("ADDON_LOADED")
+f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("BAG_UPDATE")
+f:RegisterEvent("BAG_UPDATE_DELAYED")
 f:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
 f:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
 f:RegisterEvent("CHAT_MSG_LOOT")
