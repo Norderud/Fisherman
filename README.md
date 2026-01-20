@@ -1,6 +1,6 @@
 # 🎣 Utility Tool
 
-This tool is built different. It ignores the game's memory completely.
+This tool is built different. 
 
 ## Features
 
@@ -8,6 +8,7 @@ This tool is built different. It ignores the game's memory completely.
 - Humanized movement paths (Bezier curves)
 - Audio-based event detection
 - Optical status bridge (no memory reading)
+- Humanization of all actions and reactions made 
 
 ## How to use
 
