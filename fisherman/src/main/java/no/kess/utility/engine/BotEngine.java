@@ -8,7 +8,6 @@ import no.kess.utility.ui.DetectionOverlay;
 import no.kess.utility.util.Humanizer;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 
 public class BotEngine {
@@ -25,6 +24,21 @@ public class BotEngine {
     private long startTime = 0;
     private long stopTime = 0;
     private StopReason stopReason = StopReason.MANUAL;
+
+    private long nextShortBreakTime;
+    private long nextLongBreakTime;
+
+    private void scheduleNextShortBreak() {
+        long intervalMs = Humanizer.randomInt(config.getShortBreakIntervalMin(), config.getShortBreakIntervalMax()) * 60 * 1000L;
+        nextShortBreakTime = System.currentTimeMillis() + intervalMs;
+        System.out.println("[DEBUG] Next short break in " + (intervalMs / 1000 / 60) + " minutes");
+    }
+
+    private void scheduleNextLongBreak() {
+        long intervalMs = Humanizer.randomInt(config.getLongBreakIntervalMin(), config.getLongBreakIntervalMax()) * 60 * 1000L;
+        nextLongBreakTime = System.currentTimeMillis() + intervalMs;
+        System.out.println("[DEBUG] Next long break in " + (intervalMs / 1000 / 60) + " minutes");
+    }
 
     public void start() {
         if (running) return;
@@ -79,6 +93,40 @@ public class BotEngine {
         return sb.toString();
     }
 
+    private void handleBreaks() {
+        long now = System.currentTimeMillis();
+        if (now > nextLongBreakTime) {
+            takeLongBreak();
+            scheduleNextLongBreak();
+            scheduleNextShortBreak(); // Reset short break after long one
+        } else if (now > nextShortBreakTime) {
+            takeShortBreak();
+            scheduleNextShortBreak();
+        }
+    }
+
+    private void takeShortBreak() {
+        int durationSeconds = Humanizer.randomInt(config.getShortBreakDurationMin(), config.getShortBreakDurationMax());
+        System.out.println("[DEBUG] Taking short break for " + durationSeconds + " seconds");
+        for (int i = 0; i < durationSeconds; i++) {
+            if (!running) break;
+            updateStatus("Short break (" + (durationSeconds - i) + "s)");
+            Humanizer.sleep(1000, 0);
+        }
+    }
+
+    private void takeLongBreak() {
+        int durationMinutes = Humanizer.randomInt(config.getLongBreakDurationMin(), config.getLongBreakDurationMax());
+        System.out.println("[DEBUG] Taking long break for " + durationMinutes + " minutes");
+        for (int i = 0; i < durationMinutes * 60; i++) {
+            if (!running) break;
+            if (i % 60 == 0) {
+                updateStatus("Long break (" + (durationMinutes - (i / 60)) + "m)");
+            }
+            Humanizer.sleep(1000, 0);
+        }
+    }
+
     private void botLoop() {
         try {
             BobberFinder bobberFinder = new BobberFinder(config);
@@ -104,8 +152,13 @@ public class BotEngine {
             }
 
             long lastLureTime = 0;
+            scheduleNextShortBreak();
+            scheduleNextLongBreak();
 
             while (running) {
+                handleBreaks();
+                if (!running) break;
+
                 // Check time limit
                 int limitMinutes = config.getRunTimeLimit();
                 if (limitMinutes > 0) {
@@ -249,7 +302,7 @@ public class BotEngine {
         if (!config.isLureEnabled()) return lastLureTime;
 
         long currentTime = System.currentTimeMillis();
-        long intervalMs = config.getLureInterval() * 60 * 1000L;
+        long intervalMs = config.getLureInterval() * 60 * 1000L + 800;
 
         if (lastLureTime == 0 || (currentTime - lastLureTime) >= intervalMs) {
             if (config.getLureKey() != 0) {
@@ -359,8 +412,8 @@ public class BotEngine {
         Humanizer.sleep(reactionDelay, 75);
         if (!running) return bobberPos;
 
-        int targetX = bobberPos.x + Humanizer.getGaussianInt(0, 5);
-        int targetY = bobberPos.y - Humanizer.getGaussianInt(10, 5);
+        int targetX = bobberPos.x + Humanizer.getGaussianInt(10, 5);
+        int targetY = bobberPos.y - Humanizer.getGaussianInt(0, 5);
         System.out.println("[DEBUG] Moving mouse to randomized bobber position: (" + targetX + ", " + targetY + ")");
         NativeMouse.mouseMove(targetX, targetY, screenIdx);
         return bobberPos;
@@ -395,25 +448,13 @@ public class BotEngine {
         updateStatus("Logging out...");
         Humanizer.sleep(1000, 500);
 
-        int enterSC = NativeKeyboard.getScanCode(KeyEvent.VK_ENTER);
-        int slashSC = NativeKeyboard.getScanCode(KeyEvent.VK_SLASH);
-        int lSC = NativeKeyboard.getScanCode(KeyEvent.VK_L);
-        int oSC = NativeKeyboard.getScanCode(KeyEvent.VK_O);
-        int gSC = NativeKeyboard.getScanCode(KeyEvent.VK_G);
-        int uSC = NativeKeyboard.getScanCode(KeyEvent.VK_U);
-        int tSC = NativeKeyboard.getScanCode(KeyEvent.VK_T);
-
-        NativeKeyboard.sendKey(enterSC);
-        Humanizer.sleep(200, 50);
-        NativeKeyboard.sendKey(slashSC);
-        NativeKeyboard.sendKey(lSC);
-        NativeKeyboard.sendKey(oSC);
-        NativeKeyboard.sendKey(gSC);
-        NativeKeyboard.sendKey(oSC);
-        NativeKeyboard.sendKey(uSC);
-        NativeKeyboard.sendKey(tSC);
-        Humanizer.sleep(200, 50);
-        NativeKeyboard.sendKey(enterSC);
+        int logoutKey = config.getLogoutKey();
+        if (logoutKey != 0) {
+            System.out.println("[DEBUG] Sending logout key: " + logoutKey);
+            NativeKeyboard.sendKey(logoutKey);
+        } else {
+            System.out.println("[DEBUG] No logout key configured. Skipping logout.");
+        }
 
         Humanizer.sleep(2000, 500);
     }

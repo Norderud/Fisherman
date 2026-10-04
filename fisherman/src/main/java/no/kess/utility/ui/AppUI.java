@@ -15,8 +15,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class AppUI extends JFrame {
-    public static final int SCREEN_WIDTH = 650;
-    public static final int SCREEN_HEIGHT = 600;
+    public static final int SCREEN_WIDTH = 600;
+    public static final int SCREEN_HEIGHT = 800;
     private final AppConfig config;
     private final AudioMonitor audioMonitor;
     private final BotEngine botEngine;
@@ -33,9 +33,18 @@ public class AppUI extends JFrame {
     private JTextField interactKeyField;
     private JTextField stopKeyField;
     private JTextField runTimeField;
+    private JTextField shortBreakIntervalMinField;
+    private JTextField shortBreakIntervalMaxField;
+    private JTextField shortBreakDurationMinField;
+    private JTextField shortBreakDurationMaxField;
+    private JTextField longBreakIntervalMinField;
+    private JTextField longBreakIntervalMaxField;
+    private JTextField longBreakDurationMinField;
+    private JTextField longBreakDurationMaxField;
     private JCheckBox lureCheckBox;
     private JCheckBox showDetectionCheckBox;
     private JCheckBox logoutAfterFullBagCheckBox;
+    private JTextField logoutKeyField;
     private JTextField lureIntervalField;
     private JTextField lureKeyField;
     private JComboBox<String> deviceBox;
@@ -128,11 +137,20 @@ public class AppUI extends JFrame {
             interactKeyField.setEnabled(true);
             stopKeyField.setEnabled(true);
             runTimeField.setEnabled(true);
+            shortBreakIntervalMinField.setEnabled(true);
+            shortBreakIntervalMaxField.setEnabled(true);
+            shortBreakDurationMinField.setEnabled(true);
+            shortBreakDurationMaxField.setEnabled(true);
+            longBreakIntervalMinField.setEnabled(true);
+            longBreakIntervalMaxField.setEnabled(true);
+            longBreakDurationMinField.setEnabled(true);
+            longBreakDurationMaxField.setEnabled(true);
             lureCheckBox.setEnabled(true);
             showDetectionCheckBox.setEnabled(true);
             logoutAfterFullBagCheckBox.setEnabled(true);
             lureIntervalField.setEnabled(true);
             lureKeyField.setEnabled(true);
+            logoutKeyField.setEnabled(true);
             startStopButton.setText("Start Fishing");
 
             int sessionFish = botEngine.getSessionFishCaught();
@@ -179,7 +197,7 @@ public class AppUI extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         add(createStatsPanel(), BorderLayout.NORTH);
-        add(createConfigPanel(), BorderLayout.CENTER);
+        add(new JScrollPane(createConfigPanel()), BorderLayout.CENTER);
         add(createControlsPanel(), BorderLayout.SOUTH);
     }
 
@@ -202,34 +220,99 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createConfigPanel() {
-        JPanel centerPanel = new JPanel(new GridLayout(15, 1, 5, 5));
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        centerPanel.add(createAudioDevicePanel());
-        centerPanel.add(createScreenSelectionPanel());
-        centerPanel.add(createSearchAreaPanel());
-        centerPanel.add(createVolumePanel());
-        centerPanel.add(createThresholdPanel());
-        centerPanel.add(createReactionTimePanel());
-        centerPanel.add(createRunTimeLimitPanel());
-        centerPanel.add(createCastKeyPanel());
-        centerPanel.add(createInteractKeyPanel());
-        centerPanel.add(createStopKeyPanel());
-        centerPanel.add(createLureTogglePanel());
-        centerPanel.add(createLureKeyPanel());
-        centerPanel.add(createShowDetectionPanel());
-        centerPanel.add(createLogoutAfterFullBagPanel());
-        centerPanel.add(createTestDetectionPanel());
+        // Group 1: Screen and Detection Area
+        JPanel screenAreaPanel = new JPanel(new GridLayout(1, 2, 10, 5));
+        screenAreaPanel.setBorder(BorderFactory.createTitledBorder("Screen & Detection Area"));
+        screenAreaPanel.add(createScreenSelectionPanel());
+        screenAreaPanel.add(createSearchAreaPanel());
+        centerPanel.add(screenAreaPanel);
+
+        // Group 2: Audio Settings
+        JPanel audioGroupPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        audioGroupPanel.setBorder(BorderFactory.createTitledBorder("Audio Settings"));
+        audioGroupPanel.add(createAudioDevicePanel());
+        audioGroupPanel.add(createVolumePanel());
+        audioGroupPanel.add(createThresholdPanel());
+        centerPanel.add(audioGroupPanel);
+
+        // Group 3: Timing & Breaks
+        JPanel timingPanel = new JPanel(new GridLayout(4, 1, 5, 5));
+        timingPanel.setBorder(BorderFactory.createTitledBorder("Timing & Breaks"));
+        timingPanel.add(createReactionTimePanel());
+        timingPanel.add(createRunTimeLimitPanel());
+        timingPanel.add(createShortBreakPanel());
+        timingPanel.add(createLongBreakPanel());
+        centerPanel.add(timingPanel);
+
+        // Group 4: Keybinds
+        JPanel keybindsPanel = new JPanel(new GridLayout(3, 2, 10, 5));
+        keybindsPanel.setBorder(BorderFactory.createTitledBorder("Keybinds"));
+        keybindsPanel.add(createCastKeyPanel());
+        keybindsPanel.add(createInteractKeyPanel());
+        keybindsPanel.add(createLureKeyPanel());
+        keybindsPanel.add(createStopKeyPanel());
+        keybindsPanel.add(createLogoutKeyPanel());
+        keybindsPanel.add(new JPanel()); // Filler
+        centerPanel.add(keybindsPanel);
+
+        // Group 5: Options & Testing
+        JPanel optionsPanel = new JPanel(new GridLayout(4, 1, 5, 5));
+        optionsPanel.setBorder(BorderFactory.createTitledBorder("Options & Testing"));
+        optionsPanel.add(createLureTogglePanel());
+        optionsPanel.add(createShowDetectionPanel());
+        optionsPanel.add(createLogoutAfterFullBagPanel());
+        optionsPanel.add(createTestDetectionPanel());
+        centerPanel.add(optionsPanel);
 
         return centerPanel;
     }
 
     private JPanel createRunTimeLimitPanel() {
-        JPanel timePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel timePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         timePanel.add(new JLabel("Run Limit (min, 0=off): "));
         runTimeField = new JTextField(String.valueOf(config.getRunTimeLimit()), 5);
         timePanel.add(runTimeField);
         return timePanel;
+    }
+
+    private JPanel createShortBreakPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(new JLabel("Short Break every "));
+        shortBreakIntervalMinField = new JTextField(String.valueOf(config.getShortBreakIntervalMin()), 3);
+        panel.add(shortBreakIntervalMinField);
+        panel.add(new JLabel("-"));
+        shortBreakIntervalMaxField = new JTextField(String.valueOf(config.getShortBreakIntervalMax()), 3);
+        panel.add(shortBreakIntervalMaxField);
+        panel.add(new JLabel(" min, for "));
+        shortBreakDurationMinField = new JTextField(String.valueOf(config.getShortBreakDurationMin()), 3);
+        panel.add(shortBreakDurationMinField);
+        panel.add(new JLabel("-"));
+        shortBreakDurationMaxField = new JTextField(String.valueOf(config.getShortBreakDurationMax()), 3);
+        panel.add(shortBreakDurationMaxField);
+        panel.add(new JLabel(" sec"));
+        return panel;
+    }
+
+    private JPanel createLongBreakPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(new JLabel("Long Break every "));
+        longBreakIntervalMinField = new JTextField(String.valueOf(config.getLongBreakIntervalMin()), 3);
+        panel.add(longBreakIntervalMinField);
+        panel.add(new JLabel("-"));
+        longBreakIntervalMaxField = new JTextField(String.valueOf(config.getLongBreakIntervalMax()), 3);
+        panel.add(longBreakIntervalMaxField);
+        panel.add(new JLabel(" min, for "));
+        longBreakDurationMinField = new JTextField(String.valueOf(config.getLongBreakDurationMin()), 3);
+        panel.add(longBreakDurationMinField);
+        panel.add(new JLabel("-"));
+        longBreakDurationMaxField = new JTextField(String.valueOf(config.getLongBreakDurationMax()), 3);
+        panel.add(longBreakDurationMaxField);
+        panel.add(new JLabel(" min"));
+        return panel;
     }
 
     private JPanel createAudioDevicePanel() {
@@ -292,15 +375,15 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createSearchAreaPanel() {
-        JPanel areaPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton selectAreaBtn = new JButton("Select Search Area");
-        JLabel areaStatusLabel = new JLabel(config.getRoi() == null ? "Default (Full)" : "Custom Area Set", SwingConstants.CENTER);
+        JPanel areaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton selectAreaBtn = new JButton("Select Area");
+        JLabel areaStatusLabel = new JLabel(config.getRoi() == null ? "Default" : "Custom", SwingConstants.CENTER);
 
         selectAreaBtn.addActionListener(e -> {
             Rectangle roi = AreaSelector.selectArea(this, config.getScreenIndex());
             config.setRoi(roi);
             config.save();
-            areaStatusLabel.setText(roi == null ? "Default (Full)" : "Custom Area Set");
+            areaStatusLabel.setText(roi == null ? "Default" : "Custom");
         });
 
         areaPanel.add(selectAreaBtn);
@@ -309,7 +392,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createVolumePanel() {
-        JPanel volPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel volPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         volPanel.add(new JLabel("Volume: "));
         volumeBar = new JProgressBar(0, 100);
         volumeBar.setStringPainted(true);
@@ -318,7 +401,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createThresholdPanel() {
-        JPanel threshPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel threshPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         threshPanel.add(new JLabel("Splash Threshold (0.0 - 1.0): "));
         thresholdField = new JTextField(String.valueOf(config.getSplashThreshold()), 10);
         threshPanel.add(thresholdField);
@@ -326,7 +409,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createReactionTimePanel() {
-        JPanel reactPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel reactPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         reactPanel.add(new JLabel("Reaction Delay (ms): "));
         reactionField = new JTextField(String.valueOf(config.getReactionTime()), 10);
         reactPanel.add(reactionField);
@@ -334,7 +417,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createCastKeyPanel() {
-        JPanel castKeyPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel castKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         castKeyPanel.add(new JLabel("Cast Key: "));
         castKeyField = new JTextField(KeyEvent.getKeyText(NativeKeyboard.User32Ext.INSTANCE.MapVirtualKey(config.getCastKey(), 1)), 10);
         castKeyField.setEditable(false);
@@ -355,7 +438,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createInteractKeyPanel() {
-        JPanel keybindPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel keybindPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         keybindPanel.add(new JLabel("Interact Key: "));
         interactKeyField = new JTextField(KeyEvent.getKeyText(NativeKeyboard.User32Ext.INSTANCE.MapVirtualKey(config.getInteractKey(), 1)), 10);
         interactKeyField.setEditable(false);
@@ -376,7 +459,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createStopKeyPanel() {
-        JPanel stopKeyPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel stopKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         stopKeyPanel.add(new JLabel("Stop Key: "));
         stopKeyField = new JTextField(KeyEvent.getKeyText(NativeKeyboard.User32Ext.INSTANCE.MapVirtualKey(config.getStopKey(), 1)), 10);
         stopKeyField.setEditable(false);
@@ -397,7 +480,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createLureTogglePanel() {
-        JPanel lureRow1 = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel lureRow1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         lureCheckBox = new JCheckBox("Use Lure every ", config.isLureEnabled());
         lureRow1.add(lureCheckBox);
         lureIntervalField = new JTextField(String.valueOf(config.getLureInterval()), 4);
@@ -407,7 +490,7 @@ public class AppUI extends JFrame {
     }
 
     private JPanel createLureKeyPanel() {
-        JPanel lureKeyPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel lureKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         lureKeyPanel.add(new JLabel("Lure Key: "));
         String lureKeyName = "None";
         if (config.getLureKey() != 0) {
@@ -431,8 +514,33 @@ public class AppUI extends JFrame {
         return lureKeyPanel;
     }
 
+    private JPanel createLogoutKeyPanel() {
+        JPanel logoutKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        logoutKeyPanel.add(new JLabel("Logout Macro Key: "));
+        String logoutKeyName = "None";
+        if (config.getLogoutKey() != 0) {
+            logoutKeyName = KeyEvent.getKeyText(NativeKeyboard.User32Ext.INSTANCE.MapVirtualKey(config.getLogoutKey(), 1));
+        }
+        logoutKeyField = new JTextField(logoutKeyName, 10);
+        logoutKeyField.setEditable(false);
+        logoutKeyField.setHorizontalAlignment(JTextField.CENTER);
+        logoutKeyField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int vk = e.getKeyCode();
+                int sc = NativeKeyboard.getScanCode(vk);
+                System.out.println("[DEBUG] Setting Logout Key: " + KeyEvent.getKeyText(vk) + " (Scan Code: 0x" + Integer.toHexString(sc) + ")");
+                config.setLogoutKey(sc);
+                config.save();
+                logoutKeyField.setText(KeyEvent.getKeyText(vk));
+            }
+        });
+        logoutKeyPanel.add(logoutKeyField);
+        return logoutKeyPanel;
+    }
+
     private JPanel createShowDetectionPanel() {
-        JPanel showDetectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel showDetectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         showDetectionCheckBox = new JCheckBox("Show detection point (red circle)", config.isShowDetectionPoint());
         showDetectionCheckBox.addActionListener(e -> {
             config.setShowDetectionPoint(showDetectionCheckBox.isSelected());
@@ -463,8 +571,8 @@ public class AppUI extends JFrame {
                 if (config.isShowDetectionPoint()) {
                     DetectionOverlay.showAt(p);
                 }
-                int targetX = p.x + Humanizer.getGaussianInt(10, 25);
-                int targetY = p.y - Humanizer.getGaussianInt(10, 25);
+                int targetX = p.x + Humanizer.getGaussianInt(10, 5);
+                int targetY = p.y - Humanizer.getGaussianInt(0, 5);
                 NativeMouse.mouseMove(targetX, targetY, config.getScreenIndex());
                 JOptionPane.showMessageDialog(this, "Bobber found at " + p.x + ", " + p.y + "\nGaussian target: " + targetX + ", " + targetY + "\nMouse moved to target.");
             } else {
@@ -502,6 +610,15 @@ public class AppUI extends JFrame {
             int lureInterval = Integer.parseInt(lureIntervalField.getText());
             int runLimit = Integer.parseInt(runTimeField.getText());
 
+            config.setShortBreakIntervalMin(Integer.parseInt(shortBreakIntervalMinField.getText()));
+            config.setShortBreakIntervalMax(Integer.parseInt(shortBreakIntervalMaxField.getText()));
+            config.setShortBreakDurationMin(Integer.parseInt(shortBreakDurationMinField.getText()));
+            config.setShortBreakDurationMax(Integer.parseInt(shortBreakDurationMaxField.getText()));
+            config.setLongBreakIntervalMin(Integer.parseInt(longBreakIntervalMinField.getText()));
+            config.setLongBreakIntervalMax(Integer.parseInt(longBreakIntervalMaxField.getText()));
+            config.setLongBreakDurationMin(Integer.parseInt(longBreakDurationMinField.getText()));
+            config.setLongBreakDurationMax(Integer.parseInt(longBreakDurationMaxField.getText()));
+
             System.out.println("[DEBUG] Applying configuration - Threshold: " + thresh + ", Reaction: " + react + ", Lure: " + lureCheckBox.isSelected() + " every " + lureInterval + " mins, Limit: " + runLimit + " mins");
             config.setSplashThreshold(thresh);
             config.setReactionTime(react);
@@ -510,7 +627,7 @@ public class AppUI extends JFrame {
             config.setRunTimeLimit(runLimit);
             config.save();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid Threshold, Reaction Time, Lure Interval, or Run Limit Value");
+            JOptionPane.showMessageDialog(this, "Invalid configuration values. Please check all numeric fields.");
             return;
         }
 
@@ -520,6 +637,14 @@ public class AppUI extends JFrame {
         interactKeyField.setEnabled(false);
         stopKeyField.setEnabled(false);
         runTimeField.setEnabled(false);
+        shortBreakIntervalMinField.setEnabled(false);
+        shortBreakIntervalMaxField.setEnabled(false);
+        shortBreakDurationMinField.setEnabled(false);
+        shortBreakDurationMaxField.setEnabled(false);
+        longBreakIntervalMinField.setEnabled(false);
+        longBreakIntervalMaxField.setEnabled(false);
+        longBreakDurationMinField.setEnabled(false);
+        longBreakDurationMaxField.setEnabled(false);
         deviceBox.setEnabled(false);
         screenBox.setEnabled(false);
         lureCheckBox.setEnabled(false);
@@ -527,6 +652,7 @@ public class AppUI extends JFrame {
         logoutAfterFullBagCheckBox.setEnabled(false);
         lureIntervalField.setEnabled(false);
         lureKeyField.setEnabled(false);
+        logoutKeyField.setEnabled(false);
         startStopButton.setText("Stop Fishing");
         botEngine.start();
     }

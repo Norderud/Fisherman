@@ -176,6 +176,14 @@ public class AppConfig {
         properties.setProperty("lureKey", String.valueOf(scanCode));
     }
 
+    public int getLogoutKey() {
+        return getIntProperty("logoutKey", 0);
+    }
+
+    public void setLogoutKey(int scanCode) {
+        properties.setProperty("logoutKey", String.valueOf(scanCode));
+    }
+
     public int getLureInterval() {
         return getIntProperty("lureInterval", 10);
     }
@@ -198,6 +206,70 @@ public class AppConfig {
 
     public void setLogoutAfterFullBag(boolean logout) {
         properties.setProperty("logoutAfterFullBag", String.valueOf(logout));
+    }
+
+    public int getShortBreakIntervalMin() {
+        return getIntProperty("shortBreakIntervalMin", 15);
+    }
+
+    public void setShortBreakIntervalMin(int val) {
+        properties.setProperty("shortBreakIntervalMin", String.valueOf(val));
+    }
+
+    public int getShortBreakIntervalMax() {
+        return getIntProperty("shortBreakIntervalMax", 30);
+    }
+
+    public void setShortBreakIntervalMax(int val) {
+        properties.setProperty("shortBreakIntervalMax", String.valueOf(val));
+    }
+
+    public int getShortBreakDurationMin() {
+        return getIntProperty("shortBreakDurationMin", 30);
+    }
+
+    public void setShortBreakDurationMin(int val) {
+        properties.setProperty("shortBreakDurationMin", String.valueOf(val));
+    }
+
+    public int getShortBreakDurationMax() {
+        return getIntProperty("shortBreakDurationMax", 120);
+    }
+
+    public void setShortBreakDurationMax(int val) {
+        properties.setProperty("shortBreakDurationMax", String.valueOf(val));
+    }
+
+    public int getLongBreakIntervalMin() {
+        return getIntProperty("longBreakIntervalMin", 120);
+    }
+
+    public void setLongBreakIntervalMin(int val) {
+        properties.setProperty("longBreakIntervalMin", String.valueOf(val));
+    }
+
+    public int getLongBreakIntervalMax() {
+        return getIntProperty("longBreakIntervalMax", 240);
+    }
+
+    public void setLongBreakIntervalMax(int val) {
+        properties.setProperty("longBreakIntervalMax", String.valueOf(val));
+    }
+
+    public int getLongBreakDurationMin() {
+        return getIntProperty("longBreakDurationMin", 10);
+    }
+
+    public void setLongBreakDurationMin(int val) {
+        properties.setProperty("longBreakDurationMin", String.valueOf(val));
+    }
+
+    public int getLongBreakDurationMax() {
+        return getIntProperty("longBreakDurationMax", 20);
+    }
+
+    public void setLongBreakDurationMax(int val) {
+        properties.setProperty("longBreakDurationMax", String.valueOf(val));
     }
 
     private int getIntProperty(String key, int defaultValue) {
